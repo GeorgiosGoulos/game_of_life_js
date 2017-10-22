@@ -3,13 +3,18 @@ function Block(x, y, side) {
   this.y = y;
   this.side = side;
   this.active = false;
+  this.changeStatus = null;
 }
 
-Block.prototype.activeColor = 'rgb(150, 150, 0)';
+Block.prototype.activeColor = 'rgb(150, 80, 100)';
 Block.prototype.inactiveColor = 'rgb(255, 255, 255)';
 
 Block.prototype.info = function() {
   return 'x: ' + this.x + ', y: ' + y + ', side: ' + this.side + ', active: ' + this.active;
+}
+
+Block.prototype.getId = function() {
+  return this.x + ',' + this.y;
 }
 
 Block.prototype.toggle = function(thisCanvas) {
