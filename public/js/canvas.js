@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
   const INTERVAL_TIME = 80;
   const GRID_COLOR = 'rgb(150, 150, 150)';
 
+  const START_BUTTON_ID = 'startButton';
+  const STOP_BUTTON_ID = 'stopButton';
+  const RESET_BUTTON_ID = 'resetButton';
+  const STATUS_TEXT_ID = 'statusText';
+
   // Used to track the interval created for the iterations
   intervalId = null;
   canvas = null;
@@ -69,6 +74,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     if (!intervalId) {
       intervalId = setInterval(step, INTERVAL_TIME);
       console.log('Started iterations');
+      document.getElementById(STATUS_TEXT_ID).innerHTML = 'Started';
     }
   }
 
@@ -77,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       clearInterval(intervalId);
       intervalId = null;
       console.log('Stopped iterations');
+      document.getElementById(STATUS_TEXT_ID).innerHTML = 'Stopped';
     }
   }
 
@@ -84,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     onStopButtonClick(null);
     canvasContext.clearRect(0, 0, canvas.width, canvas.height);
     initEntities();
+    document.getElementById(STATUS_TEXT_ID).innerHTML = 'Ready';
   }
 
   function onCanvasClick(clickEvent) {
@@ -112,11 +120,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
   function initListeners() {
     canvas.addEventListener('click', onCanvasClick, false); 
-    var startButton = document.getElementById('startButton');
+    var startButton = document.getElementById(START_BUTTON_ID);
     startButton.addEventListener('click', onStartButtonClick, false);
-    var stopButton = document.getElementById('stopButton');
+    var stopButton = document.getElementById(STOP_BUTTON_ID);
     stopButton.addEventListener('click', onStopButtonClick, false);
-    var resetButton = document.getElementById('resetButton');
+    var resetButton = document.getElementById(RESET_BUTTON_ID);
     resetButton.addEventListener('click', onResetButtonClick, false);
     console.log('Listeners initialised')
   }

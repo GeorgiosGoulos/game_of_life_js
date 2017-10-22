@@ -1,7 +1,41 @@
 body {
-  background-color: red;
+  background-color: #f9f8f8;
 }
 
 canvas {
+  border: 1px solid;
   background-color: white;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: auto;
+  margin-right: auto;display: block;
+}
+
+button {
+  background-color: transparent;
+  border-radius: 8px;
+  border: 2px solid #928c8c;
+  color: #928c8c;
+  font-weight: bold;
+  font-size: 2vw;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button#startButton {
+  border-color: #14d20e;
+  color: #14d20e;
+}
+
+button#stopButton {
+  border-color: red;
+  color: red;
+}
+
+button#resetButton {
+  border-color: #ff9800;
+  color: #ff9800;
 }
