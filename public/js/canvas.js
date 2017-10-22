@@ -1,20 +1,20 @@
-$(function() {
+document.addEventListener("DOMContentLoaded", function(event) { 
 
   const CANVAS_WIDTH = 1000;
   const CANVAS_HEIGHT = 500;
   const BLOCK_SIDE = 10;
+  const INTERVAL_TIME = 80;
+  const GRID_COLOR = 'rgb(150, 150, 150)';
 
-  const GRID_COLOR = 'rgb(150,150, 150)';
-  const BLOCK_COLOR = 'rgb(200, 0, 0)';
-
+  // Used to track the interval created for the iterations
   intervalId = null;
-  INTERVAL_TIME = 200;
-
   canvas = null;
+  canvasContext = null;
   grid = null;
+  // a Dictionary of live blocks
   liveBlock = null;
 
-  function createAndDrawGrid(canvasContext) {
+  function resetGrid() {
     canvasContext.fillStyle = GRID_COLOR;
     grid = [];
     for (var h = 0; h < CANVAS_HEIGHT; h += BLOCK_SIDE) {
@@ -37,7 +37,7 @@ $(function() {
     canvasContext.stroke();
   }
 
-  function validateCanvas(canvas) {
+  function validateCanvas() {
     if (canvas.width % BLOCK_SIDE != 0) {
       throw 'Invalid width';
     }
@@ -46,21 +46,28 @@ $(function() {
     }
   }
 
-  function toggleBlock(x, y) {
+  function toggleBlock(x, y = null) {
     //TODO: Move to another method
-    x = x / BLOCK_SIDE;
-    y = y / BLOCK_SIDE;
-    active = grid[y][x].toggle(canvas);
-    if (active) {
-      liveBlock[grid[y][x].getId()] = grid[y][x];
+    var block;
+    if (x != null && y != null) {
+      var x = x / BLOCK_SIDE;
+      var y = y / BLOCK_SIDE;
+      block = grid[y][x];
+    } else if (x != null && y == null) {
+      block = x;
+    }
+    var live = block.toggle(canvas);
+    if (live) {
+      liveBlock[block.getId()] = grid[y][x];
     } else {
-      delete liveBlock[grid[y][x].getId()];
+      delete liveBlock[block.getId()];
     }
   }
 
+
   function onStartButtonClick(clickEvent) {
     if (!intervalId) {
-      intervalId = setInterval(iteration, INTERVAL_TIME);
+      intervalId = setInterval(step, INTERVAL_TIME);
       console.log('Started iterations');
     }
   }
@@ -73,18 +80,23 @@ $(function() {
     }
   }
 
+  function onResetButtonClick(clickEvent) {
+    onStopButtonClick(null);
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    initEntities();
+  }
+
   function onCanvasClick(clickEvent) {
     //    console.log(clickEvent);
 
-    var x = event.pageX - canvas.offsetLeft;
+    var x = clickEvent.pageX - canvas.offsetLeft;
     var block_x = x - (x % BLOCK_SIDE);
-    var y = event.pageY - canvas.offsetTop;
+    var y = clickEvent.pageY - canvas.offsetTop;
     var block_y = y - (y % BLOCK_SIDE);
     toggleBlock(block_x, block_y);
   }
 
-  function init() {
-
+  function initEntities() {
     canvas = document.getElementById('canvas');
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
@@ -92,18 +104,27 @@ $(function() {
     validateCanvas(canvas);
 
     if (canvas.getContext) {
-      var ctx = canvas.getContext('2d');
-      createAndDrawGrid(ctx);
-      // ctx.fillStyle = 'rgb(200, 0, 0)';
-      // ctx.fillRect(10, 10, 1, 1);
+      canvasContext = canvas.getContext('2d');
+      resetGrid();
     }
-    canvas.addEventListener('click', onCanvasClick, false); 
-    console.log('Ready');
+    console.log('Entities initialised')
+  }
 
+  function initListeners() {
+    canvas.addEventListener('click', onCanvasClick, false); 
     var startButton = document.getElementById('startButton');
     startButton.addEventListener('click', onStartButtonClick, false);
     var stopButton = document.getElementById('stopButton');
     stopButton.addEventListener('click', onStopButtonClick, false);
+    var resetButton = document.getElementById('resetButton');
+    resetButton.addEventListener('click', onResetButtonClick, false);
+    console.log('Listeners initialised')
+  }
+
+  function init() {
+    initEntities();
+    initListeners();
+    console.log('Ready');
   }
 
   function getBlockNeighbours(block, candidateBlock) {
@@ -132,7 +153,7 @@ $(function() {
         }
         if (blockY + y >= 0 && blockY + y < CANVAS_HEIGHT / BLOCK_SIDE
             && blockX + x >= 0 && blockX + x < CANVAS_WIDTH / BLOCK_SIDE
-            && grid[blockY + y][blockX + x].active) {
+            && grid[blockY + y][blockX + x].live) {
           num++; 
         }
       }
@@ -142,25 +163,29 @@ $(function() {
 
   function getBlockFutureStatus(block) {
     // Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-    if (block.active && getNumberOfLiveNeighbours(block) < 2) {
-      block.changeStatus = true;
-    } 
-    // Any live cell with more than three live neighbours dies, as if by overpopulation.
-    else if (block.active && getNumberOfLiveNeighbours(block) > 3) {
+    if (block.live && getNumberOfLiveNeighbours(block) < 2) {
       block.changeStatus = true;
     }
+
+    // Any live cell with more than three live neighbours dies, as if by overpopulation.
+    else if (block.live && getNumberOfLiveNeighbours(block) > 3) {
+      block.changeStatus = true;
+    }
+
     // Any live cell with two or three live neighbours lives on to the next generation.
+    // i.e. Do nothing
+
     // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-    else if (!block.active && getNumberOfLiveNeighbours(block) == 3) {
+    else if (!block.live && getNumberOfLiveNeighbours(block) == 3) {
       block.changeStatus = true;
     }
   }
 
-  function iteration() {
+  function step() {
+    // Blocks that are candidates to toggle
     var candidateBlocks = {};
     for (var blockId in liveBlock) {
       if (liveBlock.hasOwnProperty(blockId)) {
-        // TODO: Get neighbours too
         var block = liveBlock[blockId];
         candidateBlocks = getBlockNeighbours(block, candidateBlocks);
         candidateBlocks[block.getId()] = block;
@@ -180,8 +205,7 @@ $(function() {
         } 
       }
     }
-    console.log('Iteration done');
+    console.log('step done');
   }
-
   init();
 });

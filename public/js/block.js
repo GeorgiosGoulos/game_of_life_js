@@ -2,15 +2,15 @@ function Block(x, y, side) {
   this.x = x;
   this.y = y;
   this.side = side;
-  this.active = false;
+  this.live = false;
   this.changeStatus = null;
 }
 
-Block.prototype.activeColor = 'rgb(150, 80, 100)';
-Block.prototype.inactiveColor = 'rgb(255, 255, 255)';
+Block.prototype.liveColor = 'rgb(150, 80, 100)';
+Block.prototype.deadColor = 'rgb(200, 200, 200)';
 
 Block.prototype.info = function() {
-  return 'x: ' + this.x + ', y: ' + y + ', side: ' + this.side + ', active: ' + this.active;
+  return 'x: ' + this.x + ', y: ' + y + ', side: ' + this.side + ', live: ' + this.live;
 }
 
 Block.prototype.getId = function() {
@@ -18,9 +18,9 @@ Block.prototype.getId = function() {
 }
 
 Block.prototype.toggle = function(thisCanvas) {
-  this.active = !this.active;
+  this.live = !this.live;
   var ctx = canvas.getContext('2d');
-  ctx.fillStyle = this.active ? this.activeColor : this.inactiveColor;
+  ctx.fillStyle = this.live ? this.liveColor : this.deadColor;
   ctx.fillRect(this.x, this.y, this.side, this.side);
-  return this.active;
+  return this.live;
 }
