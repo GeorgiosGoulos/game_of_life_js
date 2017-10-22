@@ -19,6 +19,7 @@ button {
   font-weight: bold;
   font-size: 2vw;
   cursor: pointer;
+  margin: auto;
 }
 
 button:focus {
@@ -38,4 +39,8 @@ button#stopButton {
 button#resetButton {
   border-color: #ff9800;
   color: #ff9800;
+}
+
+div.centeredContents {
+  text-align:center;
 }
